@@ -1,0 +1,1648 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFORMATION DISPLAY</title>
+<style>
+:root {
+  --bg:#242628;
+  --panel:#303336;
+  --panel2:#292c2f;
+  --text:#eeeeec;
+  --muted:#999da0;
+  --green:#174b32;
+  --red:#592626;
+  --neutral:#45494c;
+  --border:#414548;
+  --font:"Noto Sans JP", "Yu Gothic", sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:12px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  overflow:hidden;
+}
+button,input,select{font:inherit}
+.dashboard{
+  width:100%;
+  height:calc(100dvh - 24px);
+  min-height:400px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:12px;
+}
+.panel{
+  min-width:0;
+  min-height:0;
+  background:var(--panel);
+  border-radius:9px;
+  padding:15px;
+  overflow:hidden;
+}
+.train-panel{
+  display:grid;
+  grid-template-columns:minmax(125px,27%) 1fr;
+  gap:15px;
+}
+.clock-area{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  min-width:0;
+}
+.analog-clock{
+  width:min(100%,190px);
+  aspect-ratio:1;
+}
+.analog-clock svg{width:100%;height:100%}
+.clock-face{
+  fill:#292c2e;
+  stroke:#777d80;
+  stroke-width:1.5;
+}
+.clock-mark{stroke:#858a8d;stroke-width:1.4}
+.clock-hand{stroke:#eee;stroke-linecap:round}
+.clock-center{fill:#eee}
+.clock-digital{
+  font-size:clamp(17px,2vw,27px);
+  font-weight:500;
+  letter-spacing:1px;
+  font-variant-numeric:tabular-nums;
+  margin-top:12px;
+}
+.clock-label{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:5px;
+}
+.timetable-stack{
+  display:grid;
+  grid-template-rows:1fr 1fr;
+  min-height:0;
+  gap:10px;
+}
+.timetable{
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.station-name{
+  font-size:clamp(13px,1.2vw,17px);
+  font-weight:600;
+  margin-bottom:8px;
+  flex-shrink:0;
+}
+.train-list{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-height:0;
+}
+.train-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+  padding:8px 10px;
+  min-height:39px;
+  border-radius:5px;
+  background:var(--neutral);
+  overflow:hidden;
+}
+.train-row.local{background:var(--green)}
+.train-row.passing{background:var(--red)}
+.train-row.semiexpress{background:#41464b}
+.train-time{
+  font-size:clamp(14px,1.35vw,19px);
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.train-detail{
+  text-align:right;
+  font-size:clamp(10px,.95vw,13px);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.train-type{font-weight:600}
+.train-dest{opacity:.85;font-size:10px;margin-top:2px}
+.no-train{
+  color:var(--muted);
+  font-size:12px;
+  padding:10px;
+}
+.right-top{
+  display:grid;
+  grid-template-columns:40% 60%;
+  gap:12px;
+}
+.date-area{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  min-width:0;
+}
+.date-line{
+  font-size:clamp(19px,2.4vw,35px);
+  font-weight:500;
+  white-space:nowrap;
+}
+.time-large{
+  font-size:clamp(27px,4vw,55px);
+  font-weight:400;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:1px;
+  white-space:nowrap;
+  margin-top:14px;
+}
+.calendar-area{
+  min-width:0;
+  min-height:0;
+  background:var(--panel2);
+  border-radius:6px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.calendar-title{
+  font-size:13px;
+  color:#c4c5c5;
+  margin-bottom:8px;
+}
+.calendar-frame{
+  flex:1;
+  width:100%;
+  min-height:0;
+  border:0;
+  border-radius:4px;
+  background:#292c2e;
+}
+.calendar-placeholder{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+}
+.weather-panel{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.weather-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.weather-place{font-size:17px;font-weight:600}
+.weather-updated{font-size:10px;color:var(--muted)}
+.weather-main{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+.weather-temp{
+  font-size:clamp(35px,5vw,65px);
+  font-weight:400;
+  font-variant-numeric:tabular-nums;
+}
+.weather-description{
+  font-size:14px;
+  color:#d2d3d3;
+}
+.weather-details{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+.weather-item{
+  background:var(--panel2);
+  border-radius:5px;
+  padding:10px;
+  min-width:0;
+}
+.weather-label{font-size:10px;color:var(--muted)}
+.weather-value{
+  font-size:clamp(13px,1.5vw,19px);
+  margin-top:5px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.forecast-title{font-size:12px;color:var(--muted);margin-top:3px}
+.forecast{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:5px;
+}
+.forecast-item{
+  flex:1;
+  min-width:65px;
+  background:var(--panel2);
+  border-radius:5px;
+  padding:9px 6px;
+  text-align:center;
+}
+.forecast-hour{font-size:11px;color:var(--muted)}
+.forecast-icon{font-size:19px;margin:6px 0}
+.forecast-temp{font-size:14px}
+.forecast-extra{font-size:10px;color:var(--muted);margin-top:4px}
+.weather-note{font-size:10px;color:var(--muted)}
+.photo-panel{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.photo-slot{
+  position:relative;
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  background:var(--panel2);
+  border-radius:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.photo-slot img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:none;
+}
+.photo-placeholder{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:9px;
+  color:var(--muted);
+  font-size:12px;
+}
+.photo-placeholder span:first-child{font-size:30px}
+.photo-slot.has-image img{display:block}
+.photo-slot.has-image .photo-placeholder{display:none}
+.photo-actions{
+  position:absolute;
+  bottom:8px;
+  right:8px;
+  display:flex;
+  gap:5px;
+  opacity:.0;
+  transition:.2s;
+}
+.photo-slot:hover .photo-actions{opacity:1}
+.photo-actions button{
+  border:0;
+  border-radius:4px;
+  background:#17191bdc;
+  color:white;
+  padding:6px 9px;
+  cursor:pointer;
+  font-size:11px;
+}
+.hidden-file{display:none}
+.settings-button{
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  z-index:20;
+  background:#45494c;
+  color:#ddd;
+  border:0;
+  border-radius:50%;
+  width:38px;
+  height:38px;
+  cursor:pointer;
+  font-size:17px;
+  opacity:.55;
+}
+.settings-button:hover{opacity:1}
+.settings{
+  display:none;
+  position:fixed;
+  z-index:30;
+  right:15px;
+  bottom:60px;
+  width:min(340px,calc(100vw - 30px));
+  max-height:75vh;
+  overflow:auto;
+  background:#35393c;
+  border:1px solid #505457;
+  border-radius:9px;
+  padding:16px;
+  box-shadow:0 8px 35px #0008;
+}
+.settings.open{display:block}
+.settings h3{font-size:15px;margin:0 0 15px}
+.setting-group{margin-bottom:15px}
+.setting-group label{
+  display:block;
+  color:#bcbfc0;
+  font-size:12px;
+  margin-bottom:6px;
+}
+.setting-group select,.setting-group input{
+  width:100%;
+  background:#242729;
+  border:1px solid #555a5d;
+  color:#eee;
+  border-radius:5px;
+  padding:9px;
+}
+.setting-group button{
+  width:100%;
+  background:#454b4e;
+  color:white;
+  border:0;
+  border-radius:5px;
+  padding:9px;
+  cursor:pointer;
+}
+.setting-help{font-size:10px;color:var(--muted);margin-top:5px}
+@media(max-width:700px){
+  body{overflow:auto;padding:7px}
+  .dashboard{
+    height:auto;
+    min-height:0;
+    grid-template-columns:1fr;
+    grid-template-rows:auto;
+    gap:8px;
+  }
+  .panel{min-height:260px;padding:11px}
+  .train-panel{min-height:350px;grid-template-columns:105px 1fr;gap:8px}
+  .right-top{min-height:220px;grid-template-columns:40% 60%}
+  .weather-panel{min-height:300px}
+  .photo-panel{min-height:240px}
+  .analog-clock{width:100%}
+  .train-row{padding:7px 6px}
+  .train-time{font-size:14px}
+  .train-detail{font-size:10px}
+  .weather-details{grid-template-columns:repeat(2,1fr)}
+  .photo-actions{opacity:1}
+}
+@media(max-width:390px){
+  .train-panel{grid-template-columns:90px 1fr}
+  .date-line{font-size:17px}
+  .time-large{font-size:25px}
+}
+</style>
+</head>
+<body>
+
+<main class="dashboard">
+
+  <!-- 左上：時計と2駅の時刻表 -->
+  <section class="panel train-panel">
+
+    <div class="clock-area">
+      <div class="analog-clock">
+        <svg viewBox="0 0 200 200">
+          <circle class="clock-face" cx="100" cy="100" r="94"/>
+          <g id="clockMarks"></g>
+          <line id="hourHand" class="clock-hand" x1="100" y1="100" x2="100" y2="55" stroke-width="5"/>
+          <line id="minuteHand" class="clock-hand" x1="100" y1="100" x2="100" y2="30" stroke-width="3"/>
+          <line id="secondHand" class="clock-hand" x1="100" y1="107" x2="100" y2="19" stroke="#a7a7a7" stroke-width="1.3"/>
+          <circle class="clock-center" cx="100" cy="100" r="4"/>
+        </svg>
+      </div>
+      <div class="clock-digital" id="trainClock">00:00:00</div>
+      <div class="clock-label">LOCAL TIME</div>
+    </div>
+
+    <div class="timetable-stack">
+
+      <div class="timetable">
+        <div class="station-name">荏原町　→　溝の口方面</div>
+        <div class="train-list" id="ebaraList"></div>
+      </div>
+
+      <div class="timetable">
+        <div class="station-name">たまプラーザ</div>
+        <div class="train-list" id="tamaList"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 右上：日付・時計・カレンダー -->
+  <section class="panel right-top">
+
+    <div class="date-area">
+      <div class="date-line" id="dateText">----</div>
+      <div class="date-line" id="weekdayText">----</div>
+      <div class="time-large" id="mainClock">00:00:00</div>
+    </div>
+
+    <div class="calendar-area">
+      <div class="calendar-title">カレンダー</div>
+      <div class="calendar-placeholder" id="calendarPlaceholder">
+        Googleカレンダー<br>API接続待ち
+      </div>
+      <iframe class="calendar-frame" id="calendarFrame"
+        style="display:none"
+        title="Google Calendar"
+        loading="lazy">
+      </iframe>
+    </div>
+
+  </section>
+
+  <!-- 左下：宮前区の天気 -->
+  <section class="panel weather-panel">
+
+    <div class="weather-head">
+      <div class="weather-place">宮前区</div>
+      <div class="weather-updated" id="weatherUpdated">天気情報を取得中</div>
+    </div>
+
+    <div class="weather-main">
+      <div class="weather-temp" id="weatherTemp">--°</div>
+      <div>
+        <div class="weather-description" id="weatherDescription">取得中</div>
+        <div class="weather-note" id="weatherFeels">体感温度 --°C</div>
+      </div>
+    </div>
+
+    <div class="weather-details">
+      <div class="weather-item">
+        <div class="weather-label">湿度</div>
+        <div class="weather-value" id="humidity">--%</div>
+      </div>
+      <div class="weather-item">
+        <div class="weather-label">風速</div>
+        <div class="weather-value" id="wind">-- m/s</div>
+      </div>
+      <div class="weather-item">
+        <div class="weather-label">視程距離</div>
+        <div class="weather-value" id="visibility">-- km</div>
+      </div>
+      <div class="weather-item">
+        <div class="weather-label">花粉情報</div>
+        <div class="weather-value" id="pollen">--</div>
+      </div>
+    </div>
+
+    <div class="forecast-title">今後の時間別予報</div>
+    <div class="forecast" id="forecast">
+      <div class="weather-note">予報を取得しています...</div>
+    </div>
+    <div class="weather-note" id="weatherExtra">
+      気象データ：Open-Meteo
+    </div>
+
+  </section>
+
+  <!-- 右下：画像2枚 -->
+  <section class="panel photo-panel">
+
+    <div class="photo-slot" id="photoSlot1" onclick="selectPhoto(1)">
+      <img id="photo1" alt="画像1">
+      <div class="photo-placeholder">
+        <span>＋</span>
+        <span>画像を添付</span>
+      </div>
+      <div class="photo-actions">
+        <button onclick="event.stopPropagation();selectPhoto(1)">変更</button>
+        <button onclick="event.stopPropagation();removePhoto(1)">削除</button>
+      </div>
+    </div>
+
+    <div class="photo-slot" id="photoSlot2" onclick="selectPhoto(2)">
+      <img id="photo2" alt="画像2">
+      <div class="photo-placeholder">
+        <span>＋</span>
+        <span>画像を添付</span>
+      </div>
+      <div class="photo-actions">
+        <button onclick="event.stopPropagation();selectPhoto(2)">変更</button>
+        <button onclick="event.stopPropagation();removePhoto(2)">削除</button>
+      </div>
+    </div>
+
+    <input class="hidden-file" type="file" id="file1" accept="image/*" onchange="uploadPhoto(1,this)">
+    <input class="hidden-file" type="file" id="file2" accept="image/*" onchange="uploadPhoto(2,this)">
+
+  </section>
+
+</main>
+
+<button class="settings-button" onclick="toggleSettings()" title="設定">⚙</button>
+
+<div class="settings" id="settings">
+  <h3>表示設定</h3>
+
+  <div class="setting-group">
+    <label>フォント</label>
+    <select id="fontSelect" onchange="changeFont(this.value)">
+      <option value='"Noto Sans JP", sans-serif'>Noto Sans JP</option>
+      <option value='"Yu Gothic", sans-serif'>游ゴシック</option>
+      <option value='Meiryo, sans-serif'>メイリオ</option>
+      <option value='"Noto Serif JP", serif'>Noto Serif JP</option>
+      <option value='"Yu Mincho", serif'>游明朝</option>
+      <option value='serif'>明朝体（標準）</option>
+      <option value='sans-serif'>ゴシック体（標準）</option>
+      <option value='system-ui, sans-serif'>システム標準</option>
+    </select>
+  </div>
+
+  <div class="setting-group">
+    <label>Googleカレンダー埋め込みURL</label>
+    <input id="calendarUrl" type="url" placeholder="https://calendar.google.com/calendar/embed?...">
+    <button style="margin-top:7px" onclick="saveCalendar()">設定する</button>
+    <div class="setting-help">Googleカレンダーの共有・埋め込み用URLを設定します。</div>
+  </div>
+
+  <div class="setting-group">
+    <label>天気情報</label>
+    <button onclick="loadWeather()">天気情報を更新</button>
+  </div>
+
+  <div class="setting-group">
+    <button onclick="toggleSettings()">閉じる</button>
+  </div>
+</div>
+
+<script>
+/* =====================================
+   1. 荏原町駅 各駅停車時刻表
+===================================== */
+
+const ebaraLocalText = `
+05:04|溝の口|通過
+05:18|溝の口|通過
+05:32|溝の口|通過
+05:45|溝の口|通過
+05:57|溝の口|通過
+06:03|溝の口|通過
+06:10|溝の口|通過
+06:16|溝の口|通過
+06:22|溝の口|通過
+06:28|溝の口|通過
+06:36|溝の口|通過
+06:42|溝の口|通過
+06:46|溝の口|通過
+06:53|溝の口|通過
+06:57|溝の口|通過
+07:00|溝の口|通過
+07:06|溝の口|通過
+07:10|溝の口|通過
+07:14|溝の口|通過
+07:20|溝の口|通過
+07:23|溝の口|通過
+07:26|溝の口|通過
+07:32|溝の口|通過
+07:35|溝の口|通過
+07:40|溝の口|通過
+07:44|溝の口|通過
+07:49|溝の口|通過
+07:53|溝の口|通過
+07:58|溝の口|通過
+08:02|溝の口|通過
+08:07|溝の口|通過
+08:11|溝の口|通過
+08:16|溝の口|通過
+08:20|溝の口|通過
+08:24|溝の口|通過
+08:29|溝の口|通過
+08:33|溝の口|通過
+08:37|溝の口|通過
+08:42|溝の口|通過
+08:46|溝の口|通過
+08:51|溝の口|通過
+08:56|溝の口|通過
+08:59|溝の口|通過
+09:04|溝の口|通過
+09:09|溝の口|通過
+09:13|溝の口|通過
+09:18|溝の口|通過
+09:22|溝の口|通過
+09:25|溝の口|通過
+09:31|溝の口|通過
+09:33|溝の口|通過
+09:39|溝の口|通過
+09:43|溝の口|通過
+09:46|溝の口|通過
+09:52|溝の口|通過
+09:57|溝の口|通過
+10:02|溝の口|通過
+10:08|溝の口|通過
+10:13|溝の口|通過
+10:18|溝の口|通過
+10:26|溝の口|通過
+10:31|溝の口|通過
+10:38|溝の口|通過
+10:44|溝の口|通過
+10:51|溝の口|通過
+10:59|溝の口|通過
+11:04|溝の口|停車
+11:12|溝の口|通過
+11:19|溝の口|通過
+11:24|溝の口|通過
+11:32|溝の口|通過
+11:39|溝の口|停車
+11:44|溝の口|停車
+11:51|溝の口|通過
+11:59|溝の口|通過
+12:04|溝の口|停車
+12:12|溝の口|通過
+12:19|溝の口|通過
+12:24|溝の口|停車
+12:32|溝の口|通過
+12:39|溝の口|通過
+12:44|溝の口|停車
+12:52|溝の口|通過
+12:59|溝の口|通過
+13:04|溝の口|停車
+13:12|溝の口|通過
+13:19|溝の口|通過
+13:24|溝の口|停車
+13:32|溝の口|通過
+13:39|溝の口|通過
+13:44|溝の口|停車
+13:52|溝の口|通過
+13:59|溝の口|通過
+14:04|溝の口|停車
+14:12|溝の口|通過
+14:19|溝の口|通過
+14:24|溝の口|停車
+14:32|溝の口|通過
+14:39|溝の口|通過
+14:44|溝の口|停車
+14:52|溝の口|通過
+14:59|溝の口|通過
+15:04|溝の口|停車
+15:12|溝の口|通過
+15:19|溝の口|通過
+15:24|溝の口|停車
+15:32|溝の口|通過
+15:39|溝の口|通過
+15:44|溝の口|停車
+15:52|溝の口|通過
+15:59|溝の口|通過
+16:04|溝の口|停車
+16:11|溝の口|通過
+16:16|溝の口|通過
+16:21|溝の口|通過
+16:28|溝の口|通過
+16:34|溝の口|通過
+16:39|溝の口|通過
+16:45|溝の口|通過
+16:51|溝の口|通過
+16:56|溝の口|通過
+17:01|溝の口|通過
+17:07|溝の口|通過
+17:12|溝の口|通過
+17:16|溝の口|通過
+17:22|溝の口|通過
+17:27|溝の口|通過
+17:31|溝の口|通過
+17:37|溝の口|通過
+17:42|溝の口|通過
+17:46|溝の口|通過
+17:52|溝の口|通過
+17:57|溝の口|通過
+18:01|溝の口|通過
+18:07|溝の口|通過
+18:12|溝の口|通過
+18:16|溝の口|通過
+18:22|溝の口|通過
+18:27|溝の口|通過
+18:31|溝の口|通過
+18:37|溝の口|通過
+18:42|溝の口|通過
+18:46|溝の口|通過
+18:52|溝の口|通過
+18:57|溝の口|通過
+19:01|溝の口|通過
+19:07|溝の口|通過
+19:12|溝の口|通過
+19:16|溝の口|通過
+19:22|溝の口|通過
+19:27|溝の口|通過
+19:31|溝の口|通過
+19:37|溝の口|通過
+19:42|溝の口|通過
+19:46|溝の口|通過
+19:52|溝の口|通過
+19:57|溝の口|通過
+20:01|溝の口|通過
+20:07|溝の口|通過
+20:12|溝の口|通過
+20:16|溝の口|通過
+20:22|溝の口|通過
+20:27|溝の口|通過
+20:31|溝の口|通過
+20:37|溝の口|通過
+20:42|溝の口|通過
+20:46|溝の口|通過
+20:52|溝の口|通過
+20:57|溝の口|通過
+21:01|溝の口|通過
+21:07|溝の口|通過
+21:12|溝の口|通過
+21:17|溝の口|通過
+21:21|溝の口|通過
+21:28|溝の口|通過
+21:32|溝の口|通過
+21:37|溝の口|通過
+21:41|鷺沼|停車
+21:47|溝の口|通過
+21:54|溝の口|通過
+22:01|溝の口|通過
+22:08|溝の口|通過
+22:15|溝の口|通過
+22:21|溝の口|通過
+22:26|溝の口|通過
+22:36|鷺沼|停車
+22:45|溝の口|通過
+22:54|溝の口|通過
+23:02|溝の口|通過
+23:11|鷺沼|停車
+23:21|溝の口|通過
+23:29|溝の口|通過
+23:39|鷺沼|停車
+23:50|溝の口|通過
+23:59|鷺沼|停車
+00:10|溝の口|通過
+00:25|二子玉川|通過
+`;
+
+/* 旗の台の急行時刻から2分引いた時刻 */
+const ebaraExpressText = `
+06:29
+06:47
+07:01
+07:15
+07:27
+07:36
+07:45
+07:54
+08:03
+08:12
+08:20
+08:29
+08:38
+08:51
+09:00
+09:13
+09:26
+09:34
+09:47
+10:03
+10:19
+10:32
+10:45
+11:05
+11:25
+11:45
+12:05
+12:25
+12:45
+13:05
+13:25
+13:45
+14:05
+14:25
+14:45
+15:05
+15:25
+15:45
+16:05
+16:22
+16:45
+17:02
+17:17
+17:32
+17:47
+18:02
+18:17
+18:32
+18:47
+19:02
+19:17
+19:32
+19:47
+20:02
+20:17
+20:32
+20:47
+21:02
+21:22
+21:42
+22:02
+22:27
+23:03
+`;
+
+function parseEbara(){
+  const local=ebaraLocalText.trim().split(/\n+/).map(line=>{
+    const [time,dest,stop]=line.split("|");
+    return {time,type:"各駅停車",dest,stop,kind:"local"};
+  });
+  const express=ebaraExpressText.trim().split(/\n+/).map(time=>({
+    time:time.trim(),type:"急行通過",dest:"通過",kind:"passing"
+  }));
+  return [...local,...express].sort((a,b)=>toMinutes(a.time)-toMinutes(b.time));
+}
+
+/* =====================================
+   2. たまプラーザ駅 時刻表
+===================================== */
+
+const tamaText = `
+05:14|各駅停車|東武動物公園
+05:22|各駅停車|押上
+05:24|準急|渋谷
+05:30|各駅停車|東武動物公園
+05:37|各駅停車|押上
+05:41|準急|押上
+05:46|各駅停車|押上
+05:52|各駅停車|渋谷
+05:55|準急|東武動物公園
+06:01|各駅停車|南栗橋
+06:06|各駅停車|南栗橋
+06:11|準急|押上
+06:14|各駅停車|押上
+06:19|急行|大井町
+06:21|各駅停車|清澄白河
+06:27|急行|北越谷
+06:29|各駅停車|押上
+06:32|急行|東武動物公園
+06:34|各駅停車|清澄白河
+06:37|急行|清澄白河
+06:39|各駅停車|半蔵門
+06:42|急行|南栗橋
+06:44|各駅停車|清澄白河
+06:47|急行|久喜
+06:49|各駅停車|南栗橋
+06:52|急行|北越谷
+06:54|各駅停車|清澄白河
+06:57|急行|押上
+06:59|各駅停車|押上
+07:02|急行|押上
+07:04|各駅停車|清澄白河
+07:07|急行|南栗橋
+07:09|各駅停車|東武動物公園
+07:12|急行|久喜
+07:14|各駅停車|押上
+07:17|急行|押上
+07:19|各駅停車|南栗橋
+07:22|準急|清澄白河
+07:23|各駅停車|久喜
+07:26|準急|押上
+07:28|各駅停車|押上
+07:31|準急|清澄白河
+07:32|各駅停車|押上
+07:35|準急|押上
+07:37|各駅停車|南栗橋
+07:39|準急|清澄白河
+07:41|各駅停車|清澄白河
+07:44|準急|東武動物公園
+07:45|各駅停車|押上
+07:48|準急|押上
+07:50|各駅停車|押上
+07:52|準急|久喜
+07:54|各駅停車|押上
+07:57|準急|清澄白河
+07:58|各駅停車|押上
+08:01|準急|南栗橋
+08:03|各駅停車|押上
+08:05|準急|清澄白河
+08:07|各駅停車|南栗橋
+08:10|準急|押上
+08:12|各駅停車|押上
+08:15|準急|清澄白河
+08:17|各駅停車|南栗橋
+08:20|準急|押上
+08:23|各駅停車|押上
+08:25|各駅停車|押上
+08:28|急行|鷺沼
+08:31|各駅停車|押上
+08:36|急行|押上
+08:39|各駅停車|南栗橋
+08:43|急行|久喜
+08:45|各駅停車|押上
+08:50|急行|押上
+08:52|各駅停車|久喜
+08:56|急行|押上
+08:59|各駅停車|押上
+09:03|急行|押上
+09:05|各駅停車|南栗橋
+09:09|急行|押上
+09:11|各駅停車|押上
+09:15|各駅停車|久喜
+09:18|急行|押上
+09:22|各駅停車|押上
+09:24|各駅停車|南栗橋
+09:28|急行|押上
+09:31|各駅停車|押上
+09:35|各駅停車|清澄白河
+09:39|急行|押上
+09:43|各駅停車|押上
+09:47|各駅停車|南栗橋
+09:50|急行|久喜
+09:56|各駅停車|久喜
+10:02|各駅停車|押上
+10:04|急行|押上
+10:10|各駅停車|押上
+10:15|各駅停車|久喜
+10:18|急行|南栗橋
+10:23|各駅停車|南栗橋
+10:25|準急|押上
+10:32|各駅停車|押上
+10:35|急行|押上
+10:41|各駅停車|押上
+10:47|各駅停車|押上
+10:49|急行|久喜
+10:56|各駅停車|久喜
+10:59|急行|南栗橋
+11:06|各駅停車|押上
+11:08|準急|押上
+11:17|各駅停車|久喜
+11:19|急行|南栗橋
+11:26|各駅停車|押上
+11:30|準急|押上
+11:36|各駅停車|久喜
+11:40|急行|南栗橋
+11:44|各駅停車|押上
+11:46|急行|大井町
+11:52|準急|押上
+11:55|各駅停車|久喜
+11:58|急行|南栗橋
+12:04|各駅停車|押上
+12:06|急行|大井町
+12:12|準急|押上
+12:15|各駅停車|久喜
+12:18|急行|南栗橋
+12:24|各駅停車|押上
+12:26|急行|大井町
+12:32|準急|押上
+12:35|各駅停車|久喜
+12:38|急行|南栗橋
+12:44|各駅停車|押上
+12:46|急行|大井町
+12:52|準急|押上
+12:55|各駅停車|久喜
+12:58|急行|南栗橋
+13:04|各駅停車|押上
+13:06|急行|大井町
+13:12|準急|押上
+13:15|各駅停車|久喜
+13:18|急行|南栗橋
+13:24|各駅停車|押上
+13:26|急行|大井町
+13:32|準急|押上
+13:35|各駅停車|久喜
+13:38|急行|南栗橋
+13:44|各駅停車|押上
+13:46|急行|大井町
+13:52|準急|押上
+13:55|各駅停車|南栗橋
+13:58|急行|久喜
+14:04|各駅停車|押上
+14:06|急行|大井町
+14:12|準急|押上
+14:15|各駅停車|南栗橋
+14:18|急行|久喜
+14:24|各駅停車|押上
+14:26|急行|大井町
+14:32|準急|押上
+14:35|各駅停車|南栗橋
+14:38|急行|久喜
+14:44|各駅停車|押上
+14:46|急行|大井町
+14:52|準急|押上
+14:55|各駅停車|南栗橋
+14:58|急行|久喜
+15:04|各駅停車|押上
+15:06|急行|大井町
+15:12|準急|押上
+15:14|各駅停車|南栗橋
+15:17|各駅停車|押上
+15:19|急行|久喜
+15:24|各駅停車|押上
+15:26|急行|大井町
+15:33|準急|久喜
+15:35|各駅停車|南栗橋
+15:39|急行|押上
+15:41|各駅停車|押上
+15:46|急行|大井町
+15:48|各駅停車|押上
+15:52|準急|押上
+15:54|各駅停車|押上
+15:59|急行|久喜
+16:01|各駅停車|南栗橋
+16:04|各駅停車|押上
+16:06|急行|大井町
+16:12|準急|押上
+16:13|各駅停車|押上
+16:16|各駅停車|押上
+16:19|急行|久喜
+16:21|各駅停車|押上
+16:24|各駅停車|押上
+16:27|各駅停車|久喜
+16:29|急行|南栗橋
+16:33|各駅停車|押上
+16:35|各駅停車|南栗橋
+16:39|準急|押上
+16:41|各駅停車|押上
+16:44|各駅停車|久喜
+16:48|急行|押上
+16:51|各駅停車|押上
+16:53|各駅停車|押上
+16:55|準急|押上
+17:01|各駅停車|押上
+17:04|各駅停車|押上
+17:06|急行|南栗橋
+17:11|各駅停車|押上
+17:14|準急|久喜
+17:17|各駅停車|押上
+17:19|各駅停車|押上
+17:23|各駅停車|押上
+17:26|各駅停車|久喜
+17:28|急行|南栗橋
+17:32|各駅停車|押上
+17:34|準急|押上
+17:38|各駅停車|押上
+17:41|各駅停車|押上
+17:46|急行|南栗橋
+17:48|各駅停車|押上
+17:50|各駅停車|押上
+17:52|準急|久喜
+17:56|各駅停車|押上
+18:00|各駅停車|押上
+18:04|各駅停車|押上
+18:06|急行|南栗橋
+18:10|各駅停車|久喜
+18:13|各駅停車|押上
+18:15|準急|押上
+18:19|各駅停車|押上
+18:24|各駅停車|押上
+18:26|急行|南栗橋
+18:31|各駅停車|久喜
+18:33|各駅停車|押上
+18:35|準急|押上
+18:40|各駅停車|押上
+18:44|各駅停車|押上
+18:45|急行|南栗橋
+18:50|各駅停車|久喜
+18:54|各駅停車|押上
+18:57|準急|押上
+19:00|各駅停車|押上
+19:03|各駅停車|押上
+19:05|急行|南栗橋
+19:10|各駅停車|久喜
+19:13|各駅停車|押上
+19:15|準急|押上
+19:20|各駅停車|押上
+19:24|各駅停車|押上
+19:26|急行|南栗橋
+19:31|各駅停車|北越谷
+19:36|準急|押上
+19:38|各駅停車|押上
+19:41|各駅停車|押上
+19:45|各駅停車|久喜
+19:47|急行|南栗橋
+19:52|各駅停車|押上
+19:57|準急|押上
+20:00|各駅停車|南栗橋
+20:03|各駅停車|押上
+20:06|各駅停車|久喜
+20:08|急行|押上
+20:13|各駅停車|押上
+20:17|各駅停車|南栗橋
+20:22|各駅停車|押上
+20:24|急行|押上
+20:29|各駅停車|南栗橋
+20:32|各駅停車|押上
+20:36|各駅停車|南栗橋
+20:38|急行|押上
+20:44|各駅停車|押上
+20:49|各駅停車|押上
+20:53|各駅停車|押上
+20:55|急行|南栗橋
+21:00|各駅停車|北越谷
+21:05|各駅停車|南栗橋
+21:10|各駅停車|押上
+21:12|急行|押上
+21:17|各駅停車|押上
+21:22|各駅停車|押上
+21:28|各駅停車|北越谷
+21:29|急行|南栗橋
+21:35|各駅停車|押上
+21:42|各駅停車|押上
+21:47|各駅停車|南栗橋
+21:49|急行|南栗橋
+21:55|各駅停車|押上
+22:01|各駅停車|南栗橋
+22:07|各駅停車|押上
+22:09|急行|押上
+22:14|各駅停車|久喜
+22:24|各駅停車|南栗橋
+22:26|準急|押上
+22:36|各駅停車|押上
+22:44|各駅停車|南栗橋
+22:52|各駅停車|押上
+23:00|各駅停車|押上
+23:02|準急|清澄白河
+23:10|各駅停車|北越谷
+23:20|各駅停車|押上
+23:23|準急|押上
+23:34|各駅停車|押上
+23:43|各駅停車|清澄白河
+23:59|各駅停車|渋谷
+00:18|各駅停車|二子玉川
+00:36|各駅停車|鷺沼
+`;
+
+/* =====================================
+   3. 時刻表の処理
+===================================== */
+
+function toMinutes(time){
+  const [h,m]=time.split(":").map(Number);
+  return h*60+m;
+}
+
+function parseTama(){
+  return tamaText.trim().split(/\n+/).map(line=>{
+    const [time,type,dest]=line.split("|");
+    return {
+      time,
+      type,
+      dest,
+      kind:type==="各駅停車"?"local":
+           type==="準急"?"semiexpress":"express"
+    };
+  }).sort((a,b)=>toMinutes(a.time)-toMinutes(b.time));
+}
+
+const ebaraTrains=parseEbara();
+const tamaTrains=parseTama();
+
+function getUpcoming(trains){
+  const now=new Date();
+  const current=now.getHours()*60+now.getMinutes();
+  const threshold=current+10;
+
+  return trains.map(t=>{
+    let minute=toMinutes(t.time);
+    if(minute<current) minute+=1440;
+    return {...t,absoluteMinute:minute};
+  })
+  .filter(t=>t.absoluteMinute>=threshold)
+  .sort((a,b)=>a.absoluteMinute-b.absoluteMinute)
+  .slice(0,3);
+}
+
+function renderTrainList(elementId,trains){
+  const el=document.getElementById(elementId);
+  const upcoming=getUpcoming(trains);
+
+  if(!upcoming.length){
+    el.innerHTML='<div class="no-train">次の列車はありません</div>';
+    return;
+  }
+
+  el.innerHTML=upcoming.map(t=>{
+    const cls=t.kind==="local"?"local":
+              t.kind==="passing"?"passing":
+              t.kind==="semiexpress"?"semiexpress":"";
+
+    const type=t.type;
+    const destination=t.kind==="passing"?"通過":t.dest+"行き";
+
+    return `
+      <div class="train-row ${cls}">
+        <div class="train-time">${t.time}</div>
+        <div class="train-detail">
+          <div class="train-type">${type}</div>
+          <div class="train-dest">${destination}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function updateTimetables(){
+  renderTrainList("ebaraList",ebaraTrains);
+  renderTrainList("tamaList",tamaTrains);
+}
+
+/* =====================================
+   4. 時計
+===================================== */
+
+function createClockMarks(){
+  const group=document.getElementById("clockMarks");
+  let html="";
+  for(let i=0;i<60;i++){
+    const angle=i*Math.PI/30;
+    const major=i%5===0;
+    const r1=major?79:85;
+    const r2=91;
+    const x1=100+Math.sin(angle)*r1;
+    const y1=100-Math.cos(angle)*r1;
+    const x2=100+Math.sin(angle)*r2;
+    const y2=100-Math.cos(angle)*r2;
+    html+=`<line class="clock-mark" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${major?2:1}"/>`;
+  }
+  group.innerHTML=html;
+}
+
+function updateClocks(){
+  const now=new Date();
+  const h=now.getHours();
+  const m=now.getMinutes();
+  const s=now.getSeconds();
+
+  const time=[h,m,s].map(v=>String(v).padStart(2,"0")).join(":");
+
+  document.getElementById("trainClock").textContent=time;
+  document.getElementById("mainClock").textContent=time;
+
+  const hourAngle=(h%12)*30+m*.5;
+  const minuteAngle=m*6+s*.1;
+  const secondAngle=s*6;
+
+  document.getElementById("hourHand").setAttribute("transform",`rotate(${hourAngle} 100 100)`);
+  document.getElementById("minuteHand").setAttribute("transform",`rotate(${minuteAngle} 100 100)`);
+  document.getElementById("secondHand").setAttribute("transform",`rotate(${secondAngle} 100 100)`);
+
+  const weekdays=["日曜日","月曜日","火曜日","水曜日","木曜日","金曜日","土曜日"];
+
+  document.getElementById("dateText").textContent=
+    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+  document.getElementById("weekdayText").textContent=
+    weekdays[now.getDay()];
+}
+
+createClockMarks();
+updateClocks();
+updateTimetables();
+
+setInterval(updateClocks,1000);
+setInterval(updateTimetables,15000);
+
+/* =====================================
+   5. 天気予報 Open-Meteo
+===================================== */
+
+const WEATHER_LAT=35.59;
+const WEATHER_LON=139.58;
+
+function weatherDescription(code){
+  if(code===0)return "快晴";
+  if(code===1)return "晴れ";
+  if(code===2)return "一部曇り";
+  if(code===3)return "曇り";
+  if(code===45||code===48)return "霧";
+  if(code===51||code===53||code===55)return "霧雨";
+  if(code===61||code===63||code===65)return "雨";
+  if(code===66||code===67)return "凍雨";
+  if(code===71||code===73||code===75)return "雪";
+  if(code===77)return "霰";
+  if(code===80||code===81||code===82)return "にわか雨";
+  if(code===85||code===86)return "にわか雪";
+  if(code===95||code===96||code===99)return "雷雨";
+  return "不明";
+}
+
+function weatherSymbol(code){
+  if(code===0)return "晴";
+  if(code===1||code===2)return "晴曇";
+  if(code===3)return "曇";
+  if(code===45||code===48)return "霧";
+  if(code>=51&&code<=67)return "雨";
+  if(code>=71&&code<=77)return "雪";
+  if(code>=80&&code<=82)return "雨";
+  if(code>=95)return "雷";
+  return "－";
+}
+
+async function loadWeather(){
+  const updated=document.getElementById("weatherUpdated");
+  updated.textContent="更新中";
+
+  try{
+    const url=
+      `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}`+
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m`+
+      `&hourly=temperature_2m,relative_humidity_2m,weather_code,visibility,wind_speed_10m`+
+      `&forecast_days=2&timezone=Asia%2FTokyo`;
+
+    const response=await fetch(url);
+    if(!response.ok)throw new Error("天気データを取得できません");
+    const data=await response.json();
+
+    const c=data.current;
+    const h=data.hourly;
+
+    document.getElementById("weatherTemp").textContent=
+      `${Math.round(c.temperature_2m)}°C`;
+
+    document.getElementById("weatherDescription").textContent=
+      weatherDescription(c.weather_code);
+
+    document.getElementById("weatherFeels").textContent=
+      `体感温度 ${Math.round(c.apparent_temperature)}°C`;
+
+    document.getElementById("humidity").textContent=
+      `${c.relative_humidity_2m}%`;
+
+    document.getElementById("wind").textContent=
+      `${(c.wind_speed_10m/3.6).toFixed(1)} m/s`;
+
+    document.getElementById("weatherUpdated").textContent=
+      `更新 ${new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}`;
+
+    const direction=c.wind_direction_10m;
+    const directions=["北","北東","東","南東","南","南西","西","北西"];
+    const dir=directions[Math.round(direction/45)%8];
+
+    document.getElementById("weatherExtra").textContent=
+      `風向 ${dir}　降水量 ${c.precipitation} mm　気象データ：Open-Meteo`;
+
+    const now=new Date();
+    const currentHour=now.getHours();
+
+    const index=h.time.findIndex(t=>{
+      const d=new Date(t);
+      return d.getHours()===currentHour &&
+             d.getDate()===now.getDate();
+    });
+
+    if(index>=0){
+      const vis=h.visibility[index];
+      document.getElementById("visibility").textContent=
+        vis!=null?`${(vis/1000).toFixed(1)} km`:"--";
+    }
+
+    document.getElementById("pollen").textContent="データなし";
+
+    const forecast=document.getElementById("forecast");
+    const start=index>=0?index:0;
+
+    forecast.innerHTML=h.time.slice(start,start+8).map((t,i)=>{
+      const j=start+i;
+      const date=new Date(t);
+      const hour=String(date.getHours()).padStart(2,"0")+":00";
+
+      return `
+        <div class="forecast-item">
+          <div class="forecast-hour">${hour}</div>
+          <div class="forecast-icon">${weatherSymbol(h.weather_code[j])}</div>
+          <div class="forecast-temp">${Math.round(h.temperature_2m[j])}°</div>
+          <div class="forecast-extra">湿度 ${h.relative_humidity_2m[j]}%</div>
+          <div class="forecast-extra">風 ${(h.wind_speed_10m[j]/3.6).toFixed(1)}m/s</div>
+        </div>
+      `;
+    }).join("");
+
+    loadPollen();
+
+  }catch(error){
+    updated.textContent="取得失敗";
+    document.getElementById("weatherDescription").textContent="天気情報を取得できません";
+    console.error(error);
+  }
+}
+
+/* 花粉APIはデータが提供される場合のみ表示 */
+async function loadPollen(){
+  try{
+    const url=
+      `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}`+
+      `&hourly=grass_pollen,birch_pollen,ragweed_pollen&timezone=Asia%2FTokyo`;
+
+    const response=await fetch(url);
+    if(!response.ok)return;
+
+    const data=await response.json();
+    const h=data.hourly;
+    const now=new Date();
+
+    let index=h.time.findIndex(t=>{
+      const d=new Date(t);
+      return d.getHours()===now.getHours()&&
+             d.getDate()===now.getDate();
+    });
+
+    if(index<0)index=0;
+
+    const values=[
+      h.grass_pollen?.[index],
+      h.birch_pollen?.[index],
+      h.ragweed_pollen?.[index]
+    ].filter(v=>v!==null&&v!==undefined);
+
+    if(values.length){
+      const max=Math.max(...values);
+      document.getElementById("pollen").textContent=
+        max<1?"少ない":max<10?"やや多い":"多い";
+    }
+  }catch(e){
+    console.log("花粉データは利用できません",e);
+  }
+}
+
+loadWeather();
+setInterval(loadWeather,30*60*1000);
+
+/* =====================================
+   6. 画像アップロード・保存
+   IndexedDBを使用
+===================================== */
+
+let photoDB;
+
+function openPhotoDB(){
+  return new Promise((resolve,reject)=>{
+    const request=indexedDB.open("InformationDisplayDB",1);
+
+    request.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains("photos")){
+        db.createObjectStore("photos");
+      }
+    };
+
+    request.onsuccess=e=>{
+      photoDB=e.target.result;
+      resolve(photoDB);
+    };
+
+    request.onerror=()=>reject(request.error);
+  });
+}
+
+function savePhotoDB(key,value){
+  return new Promise((resolve,reject)=>{
+    const tx=photoDB.transaction("photos","readwrite");
+    tx.objectStore("photos").put(value,key);
+    tx.oncomplete=resolve;
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+
+function getPhotoDB(key){
+  return new Promise((resolve,reject)=>{
+    const tx=photoDB.transaction("photos","readonly");
+    const req=tx.objectStore("photos").get(key);
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+function deletePhotoDB(key){
+  return new Promise((resolve,reject)=>{
+    const tx=photoDB.transaction("photos","readwrite");
+    tx.objectStore("photos").delete(key);
+    tx.oncomplete=resolve;
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+
+function selectPhoto(number){
+  document.getElementById("file"+number).click();
+}
+
+async function uploadPhoto(number,input){
+  const file=input.files[0];
+  if(!file)return;
+
+  if(!file.type.startsWith("image/")){
+    alert("画像ファイルを選択してください");
+    return;
+  }
+
+  try{
+    const data=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=reject;
+      reader.readAsDataURL(file);
+    });
+
+    await savePhotoDB("photo"+number,data);
+    displayPhoto(number,data);
+  }catch(error){
+    alert("画像を保存できませんでした");
+    console.error(error);
+  }
+
+  input.value="";
+}
+
+function displayPhoto(number,data){
+  const img=document.getElementById("photo"+number);
+  const slot=document.getElementById("photoSlot"+number);
+
+  if(data){
+    img.src=data;
+    slot.classList.add("has-image");
+  }else{
+    img.removeAttribute("src");
+    slot.classList.remove("has-image");
+  }
+}
+
+async function removePhoto(number){
+  await deletePhotoDB("photo"+number);
+  displayPhoto(number,null);
+}
+
+async function restorePhotos(){
+  try{
+    await openPhotoDB();
+    for(let i=1;i<=2;i++){
+      const data=await getPhotoDB("photo"+i);
+      if(data)displayPhoto(i,data);
+    }
+  }catch(error){
+    console.error("画像の読み込みに失敗しました",error);
+  }
+}
+
+restorePhotos();
+
+/* =====================================
+   7. フォント設定
+===================================== */
+
+function changeFont(value){
+  document.documentElement.style.setProperty("--font",value);
+  localStorage.setItem("displayFont",value);
+}
+
+function restoreFont(){
+  const saved=localStorage.getItem("displayFont");
+  if(saved){
+    document.getElementById("fontSelect").value=saved;
+    changeFont(saved);
+  }
+}
+restoreFont();
+
+/* =====================================
+   8. Googleカレンダー
+===================================== */
+
+function saveCalendar(){
+  const url=document.getElementById("calendarUrl").value.trim();
+
+  if(!url){
+    alert("URLを入力してください");
+    return;
+  }
+
+  if(!url.startsWith("https://calendar.google.com/")){
+    alert("GoogleカレンダーのURLを入力してください");
+    return;
+  }
+
+  localStorage.setItem("calendarUrl",url);
+  applyCalendar(url);
+}
+
+function applyCalendar(url){
+  const frame=document.getElementById("calendarFrame");
+  const placeholder=document.getElementById("calendarPlaceholder");
+
+  frame.src=url;
+  frame.style.display="block";
+  placeholder.style.display="none";
+}
+
+const savedCalendar=localStorage.getItem("calendarUrl");
+if(savedCalendar){
+  document.getElementById("calendarUrl").value=savedCalendar;
+  applyCalendar(savedCalendar);
+}
+
+/* =====================================
+   9. 設定画面
+===================================== */
+
+function toggleSettings(){
+  document.getElementById("settings").classList.toggle("open");
+}
+</script>
+</body>
+</html>
